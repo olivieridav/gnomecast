@@ -652,7 +652,16 @@ class Gnomecast(object):
         self.subtitles = f.read()
     else:
       with open(fn) as f:
-        caps = f.read()
+        try:
+            caps = f.read()
+        except UnicodeDecodeError:
+            dialog = Gtk.MessageDialog(self.win, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, "File encoding not supported")
+            dialog.format_secondary_text("The chosen file does not seem to be UTF-8 encoded, please use editors like Gedit to re-encode it.")
+            dialog.run()
+            dialog.destroy()
+            self.subtitle_combo.set_active(0)
+            return
+             
       if caps.startswith('\ufeff'): # BOM
         caps = caps[1:]
       converter = pycaption.CaptionConverter()
